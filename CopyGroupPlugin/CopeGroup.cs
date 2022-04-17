@@ -31,13 +31,17 @@ namespace CopyGroupPlugin
                 XYZ groupCenter = GetElementCenter(group);
                 Room room = GetRoomByPoint(doc, groupCenter);
                 XYZ roomCenter = GetElementCenter(room);
-                XYZ ofdset = groupCenter - roomCenter;
+                XYZ offset = groupCenter - roomCenter;
 
                 XYZ point = uiDoc.Selection.PickPoint("Выберите точку");
+                Room roomByPoint = GetRoomByPoint(doc, point);
+                XYZ roomByPointCenter = GetElementCenter(roomByPoint);
+                XYZ offsetgroupCenter = offset + roomByPointCenter;
+                XYZ newPoint = new XYZ(offsetgroupCenter.X, offsetgroupCenter.Y, 0);
 
                 Transaction transaction = new Transaction(doc);
                 transaction.Start("Копировани группы объектов");
-                doc.Create.PlaceGroup(point, group.GroupType);
+                doc.Create.PlaceGroup(newPoint, group.GroupType);
                 transaction.Commit();
             }
             catch (Autodesk.Revit.Exceptions.OperationCanceledException)
@@ -56,7 +60,7 @@ namespace CopyGroupPlugin
         public XYZ GetElementCenter(Element element)
         {
             BoundingBoxXYZ bounding = element.get_BoundingBox(null);
-            return (bounding.Max + bounding.Max) / 2;
+            return (bounding.Min + bounding.Max) / 2;
         }
 
         public Room GetRoomByPoint(Document doc, XYZ point)
